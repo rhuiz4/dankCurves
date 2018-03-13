@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "ml6.h"
 #include "display.h"
@@ -19,6 +20,17 @@
 void add_circle( struct matrix * points,
                  double cx, double cy, double cz,
                  double r, double step ) {
+  double t, xstart, ystart, xend, yend;
+  for (t = 0; t < 1; t += step){
+    xstart = r * cos(2 * M_PI * t) + cx;
+    ystart = r * sin(2 * M_PI * t) + cy;
+    
+    xend = r * cos(2 * M_PI * (t + step)) + cx;
+    yend = r * sin(2 * M_PI * (t + step)) + cy;
+    
+    add_edge(points,xstart, ystart, cz, xend, yend, cz);
+  }
+  
 }
 
 /*======== void add_curve() ==========
@@ -45,21 +57,23 @@ void add_curve( struct matrix *points,
                 double x2, double y2, 
                 double x3, double y3, 
                 double step, int type ) {
+  //struct matrix *edges = new_matrix(4,2);
+  struct matrix *x_coefs = generate_curve_coefs(x0, x1, x2, x3, type);
+  struct matrix *y_coefs = generate_curve_coefs(y0, y1, y2, y3, type);;
+  double t;
 
-  if(type == 0){   //hermite
+  for (t=step; t <= 1; t+= step) {
 
+    x1 = x_coefs->m[0][0]*pow(t,3) + x_coefs->m[1][0]*pow(t,2) + x_coefs->m[2][0]*t + x_coefs->m[3][0];
+    y1 = y_coefs->m[0][0]*pow(t,3) + y_coefs->m[1][0]*pow(t,2) + y_coefs->m[2][0]*t + y_coefs->m[3][0];
+
+    add_edge(points, x0, y0, 0, x1, y1, 0);
+    x0 = x1;
+    y0 = y1;
   }
-  else if (type == 1){   //bezier
 
-  }
-  else if (type == 2){   //circle
-
-  }
-  else{
-    printf("Invalid Type\n");
-    return NULL;
-  }
-
+  free_matrix(x_coefs);
+  free_matrix(y_coefs);
 }
 
 
